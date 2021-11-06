@@ -13,7 +13,7 @@ func main() {
 		time.Sleep(2 * time.Second)
 
 		// 发
-		cnt, _ := conn.Write([]byte("hello kinx"))
+		cnt, _ := conn.Write([]byte("hello Kinx v0.2"))
 
 		// 收
 		buf := make([]byte, 512)

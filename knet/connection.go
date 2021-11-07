@@ -4,40 +4,41 @@ import (
 	"fmt"
 	"kinx/kiface"
 	"net"
-	"time"
 )
 
 // 将server阻塞获取的连接进行封装
 type Connection struct {
-	Conn      *net.TCPConn
-	ConnID    uint32
+	conn      *net.TCPConn
+	connID    uint32
 	isClosed  bool
-	HandleApi kiface.HandleFunc // 一个conn绑定的业务方法
-	ExistChan chan bool         // 客户端通知连接关闭
+	existChan chan bool         // 客户端通知连接关闭
+	router    kiface.IRouter
+}
+
+func (c *Connection) GetTCPConnection() *net.TCPConn {
+	return c.conn
 }
 
 func (c *Connection) StartReader() {
-	fmt.Println("start reader:", c.ConnID, "remote addr:", c.Conn.RemoteAddr())
+	fmt.Println("start reader:", c.connID, "remote addr:", c.conn.RemoteAddr())
 
-	defer fmt.Println("stop reader:", c.ConnID, "remote addr:", c.Conn.RemoteAddr())
+	defer fmt.Println("stop reader:", c.connID, "remote addr:", c.conn.RemoteAddr())
 	defer c.Stop()
 
 	for {
 		buf := make([]byte, 512)
-		cnt, _ := c.Conn.Read(buf)
-		fmt.Println("read from client:", string(buf))
+		c.conn.Read(buf)
 
 		// 处理读业务
-		if err := c.HandleApi(c.Conn, buf, cnt); err != nil {
-			fmt.Println("handle api err:", err)
-		}
-
-		time.Sleep(3 * time.Second)
+		req := NewRequest(c, buf)
+		c.router.PreHandle(req)
+		c.router.Handle(req)
+		c.router.PostHandle(req)
 	}
 }
 
 func (c *Connection) Start() {
-	fmt.Println("start conn:", c.ConnID, "remote addr:", c.Conn.RemoteAddr())
+	fmt.Println("start conn:", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	// 负责从客户端读数据的业务
 	go c.StartReader()
@@ -48,7 +49,7 @@ func (c *Connection) Start() {
 
 // 停止与客户端的连接
 func (c *Connection) Stop() {
-	fmt.Println("stop conn:", c.ConnID, "remote addr:", c.Conn.RemoteAddr())
+	fmt.Println("stop conn:", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	// 去重
 	if c.isClosed == true {
@@ -56,18 +57,18 @@ func (c *Connection) Stop() {
 	}
 
 	// 停止、回收资源
-	c.Conn.Close()
+	c.conn.Close()
 	c.isClosed = true
-	close(c.ExistChan)
+	close(c.existChan)
 }
 
-func NewConnection(conn *net.TCPConn, id uint32, callback kiface.HandleFunc) kiface.Iconnection {
+func NewConnection(conn *net.TCPConn, id uint32, router kiface.IRouter) kiface.IConnection {
 	c := &Connection{
-		Conn:      conn,
-		ConnID:    id,
+		conn:      conn,
+		connID:    id,
 		isClosed:  false,
-		HandleApi: callback,
-		ExistChan: make(chan bool, 1),
+		existChan: make(chan bool, 1),
+		router: router,
 	}
 	return c
 }

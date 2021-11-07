@@ -2,9 +2,8 @@ package kiface
 
 import "net"
 
-type Iconnection interface {
+type IConnection interface {
 	Start()
 	Stop()
+	GetTCPConnection() *net.TCPConn
 }
-
-type HandleFunc func(*net.TCPConn, []byte, int) error

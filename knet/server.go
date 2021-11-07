@@ -11,14 +11,7 @@ type Server struct {
 	IPVersion string // tcp4
 	IP        string
 	Port      int
-}
-
-// 连接所绑定的业务
-func callback(conn *net.TCPConn, data []byte, cnt int) error {
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Println("callback err:", err)
-	}
-	return nil
+	Router    kiface.IRouter
 }
 
 func (s *Server) Start() {
@@ -48,8 +41,8 @@ func (s *Server) Start() {
 		}
 
 		// 处理客户端连接的业务
-		dealconn := NewConnection(conn, cid, callback)
-		cid ++
+		dealconn := NewConnection(conn, cid, s.Router)
+		cid++
 		go dealconn.Start()
 	}
 
@@ -68,12 +61,17 @@ func (s *Server) Stop() {
 
 }
 
-func NewServer(name string) kiface.Iserver {
+func (s *Server) AddRouter(r kiface.IRouter) {
+	s.Router = r
+}
+
+func NewServer(name string) kiface.IServer {
 	server := &Server{
 		Name:      name,
 		IPVersion: "tcp4",
 		IP:        "0.0.0.0",
 		Port:      8888,
+		Router:    nil,
 	}
 	return server
 }

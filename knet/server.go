@@ -3,6 +3,7 @@ package knet
 import (
 	"fmt"
 	"kinx/kiface"
+	"kinx/utils"
 	"net"
 )
 
@@ -65,12 +66,12 @@ func (s *Server) AddRouter(r kiface.IRouter) {
 	s.Router = r
 }
 
-func NewServer(name string) kiface.IServer {
+func NewServer() kiface.IServer {
 	server := &Server{
-		Name:      name,
+		Name:      utils.Config.Name,
 		IPVersion: "tcp4",
-		IP:        "0.0.0.0",
-		Port:      8888,
+		IP:        utils.Config.Host,
+		Port:      utils.Config.TcpPort,
 		Router:    nil,
 	}
 	return server

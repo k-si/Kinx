@@ -10,4 +10,7 @@ tcp服务框架，参考Zinx
 ## v0.3
 增加router模块，通过继承一个baserouter，来自定义conn的业务函数。router传入server，server再传入connection。
 
+## v0.4
+增加config模块，用户通过json配置框架中的参数，host、ip等等
+
 

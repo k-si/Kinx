@@ -3,6 +3,7 @@ package knet
 import (
 	"fmt"
 	"kinx/kiface"
+	"kinx/utils"
 	"net"
 )
 
@@ -20,13 +21,13 @@ func (c *Connection) GetTCPConnection() *net.TCPConn {
 }
 
 func (c *Connection) StartReader() {
-	fmt.Println("start reader:", c.connID, "remote addr:", c.conn.RemoteAddr())
+	fmt.Println("start reader goroutine:", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	defer fmt.Println("stop reader:", c.connID, "remote addr:", c.conn.RemoteAddr())
 	defer c.Stop()
 
 	for {
-		buf := make([]byte, 512)
+		buf := make([]byte, utils.Config.MaxPackage)
 		c.conn.Read(buf)
 
 		// 处理读业务
@@ -38,7 +39,6 @@ func (c *Connection) StartReader() {
 }
 
 func (c *Connection) Start() {
-	fmt.Println("start conn:", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	// 负责从客户端读数据的业务
 	go c.StartReader()

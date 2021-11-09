@@ -10,17 +10,12 @@ type PingRouter struct {
 	knet.BaseRouter
 }
 
-func (p *PingRouter) PreHandle(req kiface.IRequest) {
-	fmt.Println("======preHandle======")
-}
-
+// 用户自定义的处理业务函数
 func (p *PingRouter) Handle(req kiface.IRequest) {
-	fmt.Println("======Handle======", string(req.GetData()))
-	req.GetConnection().GetTCPConnection().Write([]byte("ping"))
-}
-
-func (p *PingRouter) PostHandle(req kiface.IRequest) {
-	fmt.Println("======PostHandle======")
+	fmt.Println("handle==============>>>>>>>>")
+	if err := req.GetConnection().SendMessage(0, []byte("ping client...")); err != nil {
+		fmt.Println("server send message to client err:", err)
+	}
 }
 
 func main() {

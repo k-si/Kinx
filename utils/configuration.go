@@ -45,7 +45,7 @@ func (c *Configuration) reload() {
 }
 
 func init() {
-	Config := &Configuration{
+	Config = &Configuration{
 		Name:       "TcpServerApp",
 		Host:       "0.0.0.0",
 		TcpPort:    8888,
@@ -55,5 +55,5 @@ func init() {
 	}
 	Config.reload()
 
-	fmt.Printf("load configuration file: %#v\n", Config)
+	fmt.Printf("load configuration: %#v\n", Config)
 }

@@ -6,21 +6,21 @@ import (
 
 type Request struct {
 	conn kiface.IConnection
-	data []byte
+	msg kiface.IMessage
 }
 
 func (r *Request) GetConnection() kiface.IConnection {
 	return r.conn
 }
 
-func (r *Request) GetData() []byte {
-	return r.data
+func (r *Request) GetMsg() kiface.IMessage {
+	return r.msg
 }
 
-func NewRequest(conn kiface.IConnection, data []byte) kiface.IRequest{
+func NewRequest(conn kiface.IConnection, msg kiface.IMessage) kiface.IRequest{
 	req := &Request{
 		conn: conn,
-		data: data,
+		msg: msg,
 	}
 	return req
 }

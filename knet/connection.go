@@ -1,9 +1,10 @@
 package knet
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"kinx/kiface"
-	"kinx/utils"
 	"net"
 )
 
@@ -12,7 +13,7 @@ type Connection struct {
 	conn      *net.TCPConn
 	connID    uint32
 	isClosed  bool
-	existChan chan bool         // 客户端通知连接关闭
+	existChan chan bool // 客户端通知连接关闭
 	router    kiface.IRouter
 }
 
@@ -27,15 +28,58 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		buf := make([]byte, utils.Config.MaxPackage)
-		c.conn.Read(buf)
+		datapack := NewDataPack()
 
-		// 处理读业务
-		req := NewRequest(c, buf)
+		// 从conn中读取8个字节
+		headBuf := make([]byte, MessageHeadLength)
+		if _, err := io.ReadFull(c.conn, headBuf); err != nil {
+			fmt.Println("read MessageHead err:", err)
+			continue
+		}
+
+		// 将8个字节解包成message
+		msg, err := datapack.UnPack(headBuf)
+		if err != nil {
+			fmt.Println("unpack err:", err)
+		}
+
+		// 再继续读取n个字节的data
+		dataBuf := make([]byte, msg.GetMsgLen())
+		if _, err := io.ReadFull(c.conn, dataBuf); err != nil {
+			fmt.Println("read MessageData err:", err)
+			continue
+		}
+		msg.SetMsgData(dataBuf)
+
+		// 将请求封装，由外部router处理读业务
+		req := NewRequest(c, msg)
 		c.router.PreHandle(req)
 		c.router.Handle(req)
 		c.router.PostHandle(req)
 	}
+}
+
+// 向客户端发送数据
+func (c *Connection) SendMessage(id uint32, data []byte) error {
+	// 处理conn关闭情况
+	if c.isClosed {
+		return errors.New("connection have been closed")
+	}
+
+	datapack := NewDataPack()
+
+	// 将message封包成二进制数据
+	binMessage, err := datapack.Pack(NewMessage(id, data))
+	if err != nil {
+		return errors.New("pack message failed")
+	}
+
+	// 句柄写出二进制数据
+	if _, err := c.conn.Write(binMessage); err != nil {
+		return errors.New("write message to client failed")
+	}
+
+	return nil
 }
 
 func (c *Connection) Start() {
@@ -68,7 +112,7 @@ func NewConnection(conn *net.TCPConn, id uint32, router kiface.IRouter) kiface.I
 		connID:    id,
 		isClosed:  false,
 		existChan: make(chan bool, 1),
-		router: router,
+		router:    router,
 	}
 	return c
 }

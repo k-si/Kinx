@@ -16,4 +16,10 @@ tcp服务框架，参考Zinx。
 ## v0.5
 将传输的数据整合为message结构体，通过自定义TLV协议(messageType|messageDataLength|messageData)解决tcp黏包问题。
 
+## v0.6
+增加消息管理模块MsgHandler，允许用户注册多个router，每个message通过id和用户自定义的业务router一一绑定。
+
+## 当前架构：
+![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/v0.6.png)
+
 

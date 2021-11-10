@@ -10,11 +10,11 @@ import (
 
 // 将server阻塞获取的连接进行封装
 type Connection struct {
-	conn      *net.TCPConn
-	connID    uint32
-	isClosed  bool
-	existChan chan bool // 客户端通知连接关闭
-	router    kiface.IRouter
+	conn       *net.TCPConn
+	connID     uint32
+	isClosed   bool
+	existChan  chan bool // 客户端通知连接关闭
+	msgHandler kiface.IMsgHandler
 }
 
 func (c *Connection) GetTCPConnection() *net.TCPConn {
@@ -53,9 +53,8 @@ func (c *Connection) StartReader() {
 
 		// 将请求封装，由外部router处理读业务
 		req := NewRequest(c, msg)
-		c.router.PreHandle(req)
-		c.router.Handle(req)
-		c.router.PostHandle(req)
+		// 通过消息管理器，将消息分发到对应的业务router上
+		c.msgHandler.DoHandle(req)
 	}
 }
 
@@ -106,13 +105,13 @@ func (c *Connection) Stop() {
 	close(c.existChan)
 }
 
-func NewConnection(conn *net.TCPConn, id uint32, router kiface.IRouter) kiface.IConnection {
+func NewConnection(conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) kiface.IConnection {
 	c := &Connection{
-		conn:      conn,
-		connID:    id,
-		isClosed:  false,
-		existChan: make(chan bool, 1),
-		router:    router,
+		conn:       conn,
+		connID:     id,
+		isClosed:   false,
+		existChan:  make(chan bool, 1),
+		msgHandler: msgHandler,
 	}
 	return c
 }

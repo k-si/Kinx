@@ -8,11 +8,15 @@ import (
 )
 
 type Server struct {
-	Name      string // server name
-	IPVersion string // tcp4
-	IP        string
-	Port      int
-	Router    kiface.IRouter
+	Name       string // server name
+	IPVersion  string // tcp4
+	IP         string
+	Port       int
+	MsgHandler kiface.IMsgHandler // 管理msg对应的router业务
+}
+
+func (s *Server) GetMsgHandler() kiface.IMsgHandler {
+	return s.MsgHandler
 }
 
 func (s *Server) Start() {
@@ -42,7 +46,7 @@ func (s *Server) Start() {
 		}
 
 		// 处理客户端连接的业务
-		dealconn := NewConnection(conn, cid, s.Router)
+		dealconn := NewConnection(conn, cid, s.MsgHandler)
 		cid++
 		go dealconn.Start()
 	}
@@ -62,17 +66,13 @@ func (s *Server) Stop() {
 
 }
 
-func (s *Server) AddRouter(r kiface.IRouter) {
-	s.Router = r
-}
-
 func NewServer() kiface.IServer {
 	server := &Server{
-		Name:      utils.Config.Name,
-		IPVersion: "tcp4",
-		IP:        utils.Config.Host,
-		Port:      utils.Config.TcpPort,
-		Router:    nil,
+		Name:       utils.Config.Name,
+		IPVersion:  "tcp4",
+		IP:         utils.Config.Host,
+		Port:       utils.Config.TcpPort,
+		MsgHandler: NewMsgHandler(),
 	}
 	return server
 }

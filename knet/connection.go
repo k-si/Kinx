@@ -1,5 +1,6 @@
 package knet
 
+import "C"
 import (
 	"errors"
 	"fmt"
@@ -13,7 +14,8 @@ type Connection struct {
 	conn       *net.TCPConn
 	connID     uint32
 	isClosed   bool
-	existChan  chan bool // 客户端通知连接关闭
+	exitChan   chan bool   // reader通知writer停止
+	msgChan    chan []byte // reader发送writer写数据
 	msgHandler kiface.IMsgHandler
 }
 
@@ -22,9 +24,9 @@ func (c *Connection) GetTCPConnection() *net.TCPConn {
 }
 
 func (c *Connection) StartReader() {
-	fmt.Println("start reader goroutine:", c.connID, "remote addr:", c.conn.RemoteAddr())
+	fmt.Println("[start reader]")
 
-	defer fmt.Println("stop reader:", c.connID, "remote addr:", c.conn.RemoteAddr())
+	defer fmt.Println("[stop reader]")
 	defer c.Stop()
 
 	for {
@@ -34,20 +36,21 @@ func (c *Connection) StartReader() {
 		headBuf := make([]byte, MessageHeadLength)
 		if _, err := io.ReadFull(c.conn, headBuf); err != nil {
 			fmt.Println("read MessageHead err:", err)
-			continue
+			break
 		}
 
 		// 将8个字节解包成message
 		msg, err := datapack.UnPack(headBuf)
 		if err != nil {
 			fmt.Println("unpack err:", err)
+			break
 		}
 
 		// 再继续读取n个字节的data
 		dataBuf := make([]byte, msg.GetMsgLen())
 		if _, err := io.ReadFull(c.conn, dataBuf); err != nil {
 			fmt.Println("read MessageData err:", err)
-			continue
+			break
 		}
 		msg.SetMsgData(dataBuf)
 
@@ -55,6 +58,25 @@ func (c *Connection) StartReader() {
 		req := NewRequest(c, msg)
 		// 通过消息管理器，将消息分发到对应的业务router上
 		c.msgHandler.DoHandle(req)
+	}
+}
+
+func (c *Connection) StartWriter() {
+	fmt.Println("[start writer]")
+
+	for {
+		select {
+		// 读取msgChan
+		case data := <-c.msgChan:
+			_, err := c.conn.Write(data)
+			if err != nil {
+				fmt.Println("writer send message err:", err)
+			}
+		// exitChan，reader通知writer关闭
+		case <-c.exitChan:
+			fmt.Println("[writer stop]")
+			return
+		}
 	}
 }
 
@@ -73,36 +95,39 @@ func (c *Connection) SendMessage(id uint32, data []byte) error {
 		return errors.New("pack message failed")
 	}
 
-	// 句柄写出二进制数据
-	if _, err := c.conn.Write(binMessage); err != nil {
-		return errors.New("write message to client failed")
-	}
+	// 将二进制数据写入msgChan
+	c.msgChan <- binMessage
 
 	return nil
 }
 
 func (c *Connection) Start() {
+	fmt.Println("[new connection start]", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	// 负责从客户端读数据的业务
 	go c.StartReader()
 
 	// 负责从客户端写数据的业务
-	// go c.StartWriter()
+	go c.StartWriter()
 }
 
-// 停止与客户端的连接
+// reader调用stop，通知writer chan
 func (c *Connection) Stop() {
-	fmt.Println("stop conn:", c.connID, "remote addr:", c.conn.RemoteAddr())
+	fmt.Println("[stop connection]", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	// 去重
 	if c.isClosed == true {
 		return
 	}
 
-	// 停止、回收资源
+	// 通知writer停止
+	c.exitChan <- true
+
+	// 回收资源
 	c.conn.Close()
+	close(c.exitChan)
+	close(c.msgChan)
 	c.isClosed = true
-	close(c.existChan)
 }
 
 func NewConnection(conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) kiface.IConnection {
@@ -110,7 +135,8 @@ func NewConnection(conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) 
 		conn:       conn,
 		connID:     id,
 		isClosed:   false,
-		existChan:  make(chan bool, 1),
+		exitChan:   make(chan bool, 1),
+		msgChan:    make(chan []byte),
 		msgHandler: msgHandler,
 	}
 	return c

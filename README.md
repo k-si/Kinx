@@ -19,7 +19,10 @@ tcp服务框架，参考Zinx。
 ## v0.6
 增加消息管理模块MsgHandler，允许用户注册多个router，每个message通过id和用户自定义的业务router一一绑定。
 
-## 当前架构：
-![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/v0.6.png)
+## v0.7
 
+完成读写分离，一个connection启用两个goroutine分别处理读写业务，读取goroutine通过channel传输数据。
+
+## 当前架构：
+![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/kinx0.7.png)
 

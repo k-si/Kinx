@@ -1,6 +1,7 @@
 package knet
 
 import (
+	"fmt"
 	"kinx/kiface"
 	"strconv"
 )
@@ -10,6 +11,8 @@ type MsgHandler struct {
 }
 
 func (md *MsgHandler) AddRouter(msgId uint32, router kiface.IRouter) kiface.IMsgHandler{
+	fmt.Println("router registry")
+
 	// 判断不能重复注册
 	if _, ok := md.apis[msgId]; ok {
 		panic("repeat register router:" + strconv.Itoa(int(msgId)))

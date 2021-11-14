@@ -1,0 +1,8 @@
+{
+  "Name": "kinx server",
+  "Host": "0.0.0.0",
+  "TcpPort": 9999,
+  "Version": "0.7",
+  "MaxPackage": 2048,
+  "MaxConn": 3
+}

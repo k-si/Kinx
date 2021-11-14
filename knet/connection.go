@@ -1,6 +1,5 @@
 package knet
 
-import "C"
 import (
 	"errors"
 	"fmt"
@@ -21,6 +20,10 @@ type Connection struct {
 
 func (c *Connection) GetTCPConnection() *net.TCPConn {
 	return c.conn
+}
+
+func (c *Connection) GetConnectionID() uint32 {
+	return c.connID
 }
 
 func (c *Connection) StartReader() {
@@ -56,8 +59,9 @@ func (c *Connection) StartReader() {
 
 		// 将请求封装，由外部router处理读业务
 		req := NewRequest(c, msg)
-		// 通过消息管理器，将消息分发到对应的业务router上
-		c.msgHandler.DoHandle(req)
+
+		// 消息管理器将task均衡分配到worker上
+		c.msgHandler.AllotTask(req)
 	}
 }
 

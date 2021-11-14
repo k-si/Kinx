@@ -22,6 +22,9 @@ func (s *Server) GetMsgHandler() kiface.IMsgHandler {
 func (s *Server) Start() {
 	fmt.Println("server start:", s.Name, s.IP, s.Port, s.IPVersion)
 
+	// 初始化worker线程池
+	s.MsgHandler.InitWorkerPool()
+
 	// 获取server地址
 	addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 	if err != nil {
@@ -50,7 +53,6 @@ func (s *Server) Start() {
 		cid++
 		go dealconn.Start()
 	}
-
 }
 
 func (s *Server) Serve() {

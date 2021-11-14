@@ -16,9 +16,11 @@ type Configuration struct {
 	TcpPort int
 
 	// Kinx配置
-	Version    string
-	MaxConn    int
-	MaxPackage uint32
+	Version           string
+	MaxConn           int    // 最多可有多少连接
+	MaxPackage        uint32 // 一次可发送包的最大size
+	WorkerPoolSize    uint32 // 多少个worker
+	MaxWorkerTaskSize uint32 //
 }
 
 func isExist(filePath string) bool {
@@ -46,14 +48,16 @@ func (c *Configuration) reload() {
 
 func init() {
 	Config = &Configuration{
-		Name:       "TcpServerApp",
-		Host:       "0.0.0.0",
-		TcpPort:    8888,
-		Version:    "0.4",
-		MaxConn:    3,
-		MaxPackage: 1024,
+		Name:              "TcpServerApp",
+		Host:              "0.0.0.0",
+		TcpPort:           8888,
+		Version:           "0.8",
+		MaxConn:           3,
+		MaxPackage:        1024,
+		WorkerPoolSize:    5,
+		MaxWorkerTaskSize: 1024,
 	}
 	Config.reload()
 
-	fmt.Printf("load configuration: %#v\n", Config)
+	fmt.Println("load configuration success")
 }

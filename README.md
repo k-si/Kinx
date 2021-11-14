@@ -23,6 +23,10 @@ tcp服务框架，参考Zinx。
 
 完成读写分离，一个connection启用两个goroutine分别处理读写业务，读取goroutine通过channel传输数据。
 
+## v0.8
+完善消息管理模块，增加worker线程池和消息队列，每个worker带有一个队列，所有的连接业务处理均衡分配到worker上。
+
 ## 当前架构：
-![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/kinx0.7.png)
+图中的requstHandler同代码中的msgHandler
+![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/kinx0.8.png)
 

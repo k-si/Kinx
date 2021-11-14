@@ -15,14 +15,16 @@ type HelloRouter struct {
 }
 
 func (p *PingRouter) Handle(req kiface.IRequest) {
-	fmt.Println("handle this message", req.GetMsg().GetMsgId(), string(req.GetMsg().GetMsgData()))
+	fmt.Println("handler ping router")
+
 	if err := req.GetConnection().SendMessage(0, []byte("ping client...")); err != nil {
 		fmt.Println("server send message to client err:", err)
 	}
 }
 
 func (h *HelloRouter) Handle(req kiface.IRequest) {
-	fmt.Println("handle this message", req.GetMsg().GetMsgId(), string(req.GetMsg().GetMsgData()))
+	fmt.Println("handler hello router")
+
 	if err := req.GetConnection().SendMessage(0, []byte("hello client...")); err != nil {
 		fmt.Println("server send message to client err:", err)
 	}

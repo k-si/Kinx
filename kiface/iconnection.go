@@ -7,4 +7,5 @@ type IConnection interface {
 	Stop()
 	GetTCPConnection() *net.TCPConn
 	SendMessage(uint32, []byte) error
+	GetConnectionID() uint32
 }

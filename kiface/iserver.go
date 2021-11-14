@@ -6,4 +6,10 @@ type IServer interface {
 	Serve()
 	Stop()
 	GetMsgHandler() IMsgHandler
+	GetConnMgr() IConnectionManager
+	SetAfterConnSuccess(func(IConnection)) IServer
+	SetBeforeConnDestroy(func(IConnection)) IServer
+	CallAfterConnSuccess(IConnection)
+	CallBeforeConnDestroy(IConnection)
+	AddRouter(uint32, IRouter) IServer
 }

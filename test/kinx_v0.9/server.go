@@ -30,10 +30,19 @@ func (h *HelloRouter) Handle(req kiface.IRequest) {
 	}
 }
 
+func after(connection kiface.IConnection) {
+	connection.SendMessage(200, []byte("上线啦～"))
+}
+
+func before(connection kiface.IConnection) {
+	fmt.Println("下线啦～", connection.GetConnectionID())
+}
+
 func main() {
 	pr := &PingRouter{}
 	hr := &HelloRouter{}
 	s := knet.NewServer()
-	s.GetMsgHandler().AddRouter(0, pr).AddRouter(1, hr)
+	s.SetAfterConnSuccess(after).SetBeforeConnDestroy(before)
+	s.AddRouter(0, pr).AddRouter(1, hr)
 	s.Serve()
 }

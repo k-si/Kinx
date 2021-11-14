@@ -10,6 +10,7 @@ import (
 
 // 将server阻塞获取的连接进行封装
 type Connection struct {
+	tcpServer  kiface.IServer // 该连接所属的server
 	conn       *net.TCPConn
 	connID     uint32
 	isClosed   bool
@@ -113,6 +114,9 @@ func (c *Connection) Start() {
 
 	// 负责从客户端写数据的业务
 	go c.StartWriter()
+
+	// 连接完成后的hook
+	c.tcpServer.CallAfterConnSuccess(c)
 }
 
 // reader调用stop，通知writer chan
@@ -124,6 +128,9 @@ func (c *Connection) Stop() {
 		return
 	}
 
+	// 连接关闭之前的hook
+	c.tcpServer.CallBeforeConnDestroy(c)
+
 	// 通知writer停止
 	c.exitChan <- true
 
@@ -132,10 +139,17 @@ func (c *Connection) Stop() {
 	close(c.exitChan)
 	close(c.msgChan)
 	c.isClosed = true
+
+	// 将连接管理池中的连接删除
+	if err := c.tcpServer.GetConnMgr().Remove(c); err != nil {
+		fmt.Println("connection remove from connMgr fail, err:", err)
+	}
+	fmt.Println("remove connection from connMgr, active conn =", c.tcpServer.GetConnMgr().Len())
 }
 
-func NewConnection(conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) kiface.IConnection {
+func NewConnection(server kiface.IServer, conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) kiface.IConnection {
 	c := &Connection{
+		tcpServer:  server,
 		conn:       conn,
 		connID:     id,
 		isClosed:   false,
@@ -143,5 +157,9 @@ func NewConnection(conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) 
 		msgChan:    make(chan []byte),
 		msgHandler: msgHandler,
 	}
+
+	c.tcpServer.GetConnMgr().Add(c)
+	fmt.Println("add connection in connMgr, active conn =", c.tcpServer.GetConnMgr().Len())
+
 	return c
 }

@@ -16,7 +16,7 @@ func main() {
 
 		// pack
 		datapack := knet.NewDataPack()
-		msg := knet.NewMessage(1, []byte("hello Kinx v0.8"))
+		msg := knet.NewMessage(1, []byte("hello Kinx v0.9"))
 		binMsg, err := datapack.Pack(msg)
 		if err != nil {
 			fmt.Println("data pack err:", err)

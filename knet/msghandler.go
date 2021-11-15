@@ -17,19 +17,6 @@ func (md *MsgHandler) GetApis() map[uint32]kiface.IRouter {
 	return md.apis
 }
 
-func (md *MsgHandler) AddRouter(msgId uint32, router kiface.IRouter) kiface.IMsgHandler {
-	fmt.Println("router registry success")
-
-	// 判断不能重复注册
-	if _, ok := md.apis[msgId]; ok {
-		panic("repeat register router:" + strconv.Itoa(int(msgId)))
-	}
-	// 添加到map
-	md.apis[msgId] = router
-
-	return md
-}
-
 func (md *MsgHandler) InitWorkerPool() {
 	fmt.Println("init worker pool, size:", utils.Config.WorkerPoolSize)
 

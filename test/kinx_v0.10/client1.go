@@ -16,7 +16,7 @@ func main() {
 
 		// pack
 		datapack := knet.NewDataPack()
-		msg := knet.NewMessage(1, []byte("hello Kinx v0.6"))
+		msg := knet.NewMessage(1, []byte("hello Kinx v0.10"))
 		binMsg, err := datapack.Pack(msg)
 		if err != nil {
 			fmt.Println("data pack err:", err)
@@ -36,7 +36,7 @@ func main() {
 		io.ReadFull(conn, dataBuf)
 		msg.SetMsgData(dataBuf)
 
-		fmt.Println(msg.GetMsgId(), msg.GetMsgLen(), string(msg.GetMsgData()))
+		fmt.Println("id =", msg.GetMsgId(), "len =", msg.GetMsgLen(), "data =", string(msg.GetMsgData()))
 	}
 
 }

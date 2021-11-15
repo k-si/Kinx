@@ -2,7 +2,7 @@
   "Name": "kinx server",
   "Host": "0.0.0.0",
   "TcpPort": 9999,
-  "Version": "0.9",
+  "Version": "0.10",
   "MaxPackage": 2048,
   "MaxConn": 3,
   "WorkerPoolSize": 3

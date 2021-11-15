@@ -6,17 +6,20 @@ import (
 	"io"
 	"kinx/kiface"
 	"net"
+	"sync"
 )
 
 // 将server阻塞获取的连接进行封装
 type Connection struct {
-	tcpServer  kiface.IServer // 该连接所属的server
-	conn       *net.TCPConn
-	connID     uint32
-	isClosed   bool
-	exitChan   chan bool   // reader通知writer停止
-	msgChan    chan []byte // reader发送writer写数据
-	msgHandler kiface.IMsgHandler
+	tcpServer    kiface.IServer // 该连接所属的server
+	conn         *net.TCPConn
+	connID       uint32
+	isClosed     bool
+	exitChan     chan bool   // reader通知writer停止
+	msgChan      chan []byte // reader发送writer写数据
+	msgHandler   kiface.IMsgHandler
+	property     map[string]interface{} // 提供用户自定义连接属性
+	propertyLock sync.RWMutex
 }
 
 func (c *Connection) GetTCPConnection() *net.TCPConn {
@@ -25,6 +28,37 @@ func (c *Connection) GetTCPConnection() *net.TCPConn {
 
 func (c *Connection) GetConnectionID() uint32 {
 	return c.connID
+}
+
+func (c *Connection) SetProperty(name string, value interface{}) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	c.property[name] = value
+}
+func (c *Connection) GetProperty(name string) (interface{}, error) {
+	c.propertyLock.RLock()
+	defer c.propertyLock.RUnlock()
+
+	if v, ok := c.property[name]; ok {
+		return v, nil
+	} else {
+		fmt.Println("property", name, "not found")
+		return nil, errors.New("property not found")
+	}
+}
+
+func (c *Connection) RemoveProperty(name string) error {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	if _, ok := c.property[name]; ok {
+		delete(c.property, name)
+		return nil
+	} else {
+		fmt.Println("property", name, "not registry")
+		return errors.New("property not registry")
+	}
 }
 
 func (c *Connection) StartReader() {
@@ -149,13 +183,15 @@ func (c *Connection) Stop() {
 
 func NewConnection(server kiface.IServer, conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) kiface.IConnection {
 	c := &Connection{
-		tcpServer:  server,
-		conn:       conn,
-		connID:     id,
-		isClosed:   false,
-		exitChan:   make(chan bool, 1),
-		msgChan:    make(chan []byte),
-		msgHandler: msgHandler,
+		tcpServer:    server,
+		conn:         conn,
+		connID:       id,
+		isClosed:     false,
+		exitChan:     make(chan bool, 1),
+		msgChan:      make(chan []byte),
+		msgHandler:   msgHandler,
+		property:     make(map[string]interface{}),
+		propertyLock: sync.RWMutex{},
 	}
 
 	c.tcpServer.GetConnMgr().Add(c)

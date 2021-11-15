@@ -26,7 +26,13 @@ tcp服务框架，参考Zinx。
 ## v0.8
 完善消息管理模块，增加worker线程池和消息队列，每个worker带有一个队列，所有的连接业务处理均衡分配到worker上。
 
+## v0.9
+增加连接管理模块，将所有连接放入map中，方便查看、操作当前活跃的连接。增加两个hook函数，连接建立之后、连接销毁之前。
+
+## v0.10
+增加连接属性配置，方便用户给连接配置一些property。
+
 ## 当前架构：
 图中的requstHandler同代码中的msgHandler
-![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/kinx0.8.png)
+![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/Kinx0.10.png)
 

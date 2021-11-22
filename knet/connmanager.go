@@ -53,7 +53,7 @@ func (cm *ConnectionManager) Clear() {
 
 	for id, conn := range cm.connections {
 		// 停止conn
-		conn.Stop()
+		conn.StopWithNotConnMgr()
 
 		// 删除conn
 		delete(cm.connections, id)

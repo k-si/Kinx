@@ -41,7 +41,6 @@ func before(connection kiface.IConnection) {
 	name, _ := connection.GetProperty("name")
 	age , _ := connection.GetProperty("age")
 	fmt.Println(name, age)
-
 }
 
 func main() {

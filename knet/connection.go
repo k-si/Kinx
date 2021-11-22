@@ -64,9 +64,6 @@ func (c *Connection) RemoveProperty(name string) error {
 func (c *Connection) StartReader() {
 	fmt.Println("[start reader]")
 
-	defer fmt.Println("[stop reader]")
-	defer c.Stop()
-
 	for {
 		datapack := NewDataPack()
 
@@ -98,6 +95,9 @@ func (c *Connection) StartReader() {
 		// 消息管理器将task均衡分配到worker上
 		c.msgHandler.AllotTask(req)
 	}
+
+	fmt.Println("connection", c.connID, "been exit")
+	c.Stop()
 }
 
 func (c *Connection) StartWriter() {
@@ -153,8 +153,18 @@ func (c *Connection) Start() {
 	c.tcpServer.CallAfterConnSuccess(c)
 }
 
-// reader调用stop，通知writer chan
 func (c *Connection) Stop() {
+	c.StopWithNotConnMgr()
+
+	// 将连接管理池中的连接删除
+	if err := c.tcpServer.GetConnMgr().Remove(c); err != nil {
+		fmt.Println("connection remove from connMgr fail, err:", err)
+	}
+	fmt.Println("remove connection from connMgr, active conn =", c.tcpServer.GetConnMgr().Len())
+}
+
+// reader调用stop，通知writer chan
+func (c *Connection) StopWithNotConnMgr() {
 	fmt.Println("[stop connection]", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	// 去重
@@ -167,6 +177,7 @@ func (c *Connection) Stop() {
 
 	// 通知writer停止
 	c.exitChan <- true
+	fmt.Println("writer will close")
 
 	// 回收资源
 	c.conn.Close()
@@ -174,11 +185,7 @@ func (c *Connection) Stop() {
 	close(c.msgChan)
 	c.isClosed = true
 
-	// 将连接管理池中的连接删除
-	if err := c.tcpServer.GetConnMgr().Remove(c); err != nil {
-		fmt.Println("connection remove from connMgr fail, err:", err)
-	}
-	fmt.Println("remove connection from connMgr, active conn =", c.tcpServer.GetConnMgr().Len())
+	fmt.Println("[finish close connection]")
 }
 
 func NewConnection(server kiface.IServer, conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) kiface.IConnection {

@@ -5,6 +5,7 @@ type IServer interface {
 	Start()
 	Serve()
 	Stop()
+	Recycle()
 	GetMsgHandler() IMsgHandler
 	GetConnMgr() IConnectionManager
 	SetAfterConnSuccess(func(IConnection)) IServer

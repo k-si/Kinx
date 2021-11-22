@@ -5,6 +5,7 @@ import "net"
 type IConnection interface {
 	Start()
 	Stop()
+	StopWithNotConnMgr()
 	GetTCPConnection() *net.TCPConn
 	SendMessage(uint32, []byte) error
 	GetConnectionID() uint32

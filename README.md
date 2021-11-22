@@ -32,6 +32,9 @@ tcp服务框架，参考Zinx。
 ## v0.10
 增加连接属性配置，方便用户给连接配置一些property。
 
+## v0.11
+实现优雅关闭server，资源回收。
+
 ## 当前架构：
 图中的requstHandler同代码中的msgHandler
 ![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/Kinx0.10.png)

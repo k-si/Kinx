@@ -1,6 +1,14 @@
 # Kinx
 tcp服务框架，参考Zinx。
 
+# 使用
+![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/kinx%E4%BD%BF%E7%94%A8.png)
+
+# 当前架构
+图中的requstHandler同代码中的msgHandler
+![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/Kinx0.10.png)
+
+# 架构演进
 ## v0.1
 实现server模块，可以正常启动一个server与client回显对话。
 
@@ -38,7 +46,5 @@ tcp服务框架，参考Zinx。
 ## v1.0
 实现服务端和客户端heart beat检测，完善一些字节和控制台输出信息。
 
-## 当前架构：
-图中的requstHandler同代码中的msgHandler
-![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/Kinx0.10.png)
+
 

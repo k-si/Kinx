@@ -12,6 +12,10 @@ type ConnectionManager struct {
 	mu          sync.RWMutex
 }
 
+func (cm *ConnectionManager) GetConns() map[uint32]kiface.IConnection {
+	return cm.connections
+}
+
 // 添加连接
 func (cm *ConnectionManager) Add(connection kiface.IConnection) {
 	cm.mu.Lock()

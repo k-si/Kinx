@@ -37,12 +37,23 @@ func (c *Configuration) reload() {
 	if isExist(filePath) {
 		data, err := ioutil.ReadFile(filePath)
 		if err != nil {
-			fmt.Println("read config.json fail")
+			fmt.Println("read kinx.json fail")
 		}
 		err = json.Unmarshal(data, &Config)
 		if err != nil {
-			fmt.Println("parse config.json fail")
+			fmt.Println("parse kinx.json fail")
 		}
+	}
+}
+
+func (c *Configuration) banner() {
+	filePath := "conf/kinx.banner"
+	if isExist(filePath) {
+		data, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			fmt.Println("read kinx.banner fail")
+		}
+		fmt.Println(string(data))
 	}
 }
 
@@ -57,7 +68,14 @@ func init() {
 		WorkerPoolSize:    5,
 		MaxWorkerTaskSize: 1024,
 	}
+
+	// 加载配置文件
 	Config.reload()
 
-	fmt.Println("load configuration success")
+	// 显示banner
+	Config.banner()
+
+	fmt.Println("[server load configuration...]")
+	fmt.Println("[server MAX connection number]:", Config.MaxConn)
+	fmt.Println("[server worker pool size]:", Config.WorkerPoolSize)
 }

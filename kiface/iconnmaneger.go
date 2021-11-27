@@ -1,6 +1,8 @@
 package kiface
 
 type IConnectionManager interface {
+	GetConns() map[uint32]IConnection
+
 	// 添加连接
 	Add(connection IConnection)
 

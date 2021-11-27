@@ -18,7 +18,7 @@ func (md *MsgHandler) GetApis() map[uint32]kiface.IRouter {
 }
 
 func (md *MsgHandler) InitWorkerPool() {
-	fmt.Println("init worker pool, size:", utils.Config.WorkerPoolSize)
+	fmt.Println("[server worker pool start SUCCESS]")
 
 	for i := 0; i < int(md.workerPoolSize); i++ {
 		// 千万不要忘了初始化channel，虽然channel列表已经make，但其中的每一个channel也要make
@@ -28,7 +28,7 @@ func (md *MsgHandler) InitWorkerPool() {
 }
 
 func (md *MsgHandler) StartWorker(workerID int, taskQueue chan kiface.IRequest) {
-	fmt.Println("worker", workerID, "start!")
+	fmt.Println("[worker", workerID, "START...]")
 
 	// worker处理队列中的任务
 	for {
@@ -39,6 +39,7 @@ func (md *MsgHandler) StartWorker(workerID int, taskQueue chan kiface.IRequest) 
 	}
 }
 
+// TODO: 优化请求均衡算法
 func (md *MsgHandler) AllotTask(req kiface.IRequest) {
 	// connection 将request均衡的分配给每个worker
 	workerId := req.GetConnection().GetConnectionID() % md.workerPoolSize
@@ -46,7 +47,7 @@ func (md *MsgHandler) AllotTask(req kiface.IRequest) {
 	// 按照连接id进行分配，一个连接专属一个worker
 	md.workerTaskQueue[workerId] <- req
 
-	fmt.Println("request", req.GetConnection().GetConnectionID(), "had allot to worker", workerId)
+	fmt.Println("[request", req.GetConnection().GetConnectionID(), "had allot to worker", workerId, "]")
 }
 
 func (md *MsgHandler) DoHandle(req kiface.IRequest) {

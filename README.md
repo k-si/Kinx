@@ -33,7 +33,10 @@ tcp服务框架，参考Zinx。
 增加连接属性配置，方便用户给连接配置一些property。
 
 ## v0.11
-实现优雅关闭server，资源回收。
+通过channel实现优雅关闭 tcp server。
+
+## v1.0
+实现服务端和客户端heart beat检测，完善一些字节和控制台输出信息。
 
 ## 当前架构：
 图中的requstHandler同代码中的msgHandler

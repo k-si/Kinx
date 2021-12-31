@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"kinx/kiface"
-	"kinx/utils"
 )
 
 const (
@@ -51,7 +50,7 @@ func (d *DataPack) UnPack(data []byte) (kiface.IMessage, error) {
 	}
 
 	// 如果该message的data过长，返回err
-	if head.GetMsgLen() > utils.Config.MaxPackage {
+	if head.GetMsgLen() > config.MaxPackageSize {
 		return nil, errors.New("message length larger than max package length")
 	}
 

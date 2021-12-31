@@ -46,7 +46,7 @@ func (h *HelloRouter) Handle(req kiface.IRequest) {
 func main() {
 	pr := &PingRouter{}
 	hr := &HelloRouter{}
-	s := knet.NewServer()
+	s := knet.NewServer(knet.DefaultConfig())
 
 	//s.SetAfterConnSuccess(after).SetBeforeConnDestroy(before)
 	s.AddRouter(0, pr).AddRouter(1, hr).Serve()

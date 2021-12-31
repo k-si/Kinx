@@ -1,9 +1,7 @@
 package knet
 
 import (
-	"fmt"
 	"kinx/kiface"
-	"kinx/utils"
 	"strconv"
 )
 
@@ -18,17 +16,17 @@ func (md *MsgHandler) GetApis() map[uint32]kiface.IRouter {
 }
 
 func (md *MsgHandler) InitWorkerPool() {
-	fmt.Println("[server worker pool start SUCCESS]")
+	//log.Println("[server worker pool start SUCCESS]")
 
 	for i := 0; i < int(md.workerPoolSize); i++ {
 		// 千万不要忘了初始化channel，虽然channel列表已经make，但其中的每一个channel也要make
-		md.workerTaskQueue[i] = make(chan kiface.IRequest, utils.Config.MaxWorkerTaskSize)
+		md.workerTaskQueue[i] = make(chan kiface.IRequest, config.MaxWorkerTaskSize)
 		go md.StartWorker(i, md.workerTaskQueue[i])
 	}
 }
 
 func (md *MsgHandler) StartWorker(workerID int, taskQueue chan kiface.IRequest) {
-	fmt.Println("[worker", workerID, "START...]")
+	//log.Println("[worker", workerID, "START...]")
 
 	// worker处理队列中的任务
 	for {
@@ -47,7 +45,7 @@ func (md *MsgHandler) AllotTask(req kiface.IRequest) {
 	// 按照连接id进行分配，一个连接专属一个worker
 	md.workerTaskQueue[workerId] <- req
 
-	fmt.Println("[request", req.GetConnection().GetConnectionID(), "had allot to worker", workerId, "]")
+	//log.Println("[request", req.GetConnection().GetConnectionID(), "had allot to worker", workerId, "]")
 }
 
 func (md *MsgHandler) DoHandle(req kiface.IRequest) {
@@ -65,7 +63,7 @@ func (md *MsgHandler) DoHandle(req kiface.IRequest) {
 func NewMsgHandler() kiface.IMsgHandler {
 	return &MsgHandler{
 		apis:            make(map[uint32]kiface.IRouter),
-		workerTaskQueue: make([]chan kiface.IRequest, utils.Config.WorkerPoolSize),
-		workerPoolSize:  utils.Config.WorkerPoolSize,
+		workerTaskQueue: make([]chan kiface.IRequest, config.WorkerPoolSize),
+		workerPoolSize:  config.WorkerPoolSize,
 	}
 }

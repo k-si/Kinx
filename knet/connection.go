@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"kinx/kiface"
+	"log"
 	"net"
 	"strings"
 	"sync"
@@ -22,8 +23,8 @@ type Connection struct {
 	conn         *net.TCPConn
 	connID       uint32
 	isClosed     uint32
-	exitChan     chan struct{}   // reader通知writer停止
-	msgChan      chan []byte // reader发送writer写数据
+	exitChan     chan struct{} // reader通知writer停止
+	msgChan      chan []byte   // reader发送writer写数据
 	msgHandler   kiface.IMsgHandler
 	property     map[string]interface{} // 提供用户自定义连接属性
 	propertyLock *sync.RWMutex
@@ -59,26 +60,22 @@ func (c *Connection) GetProperty(name string) (interface{}, error) {
 	if v, ok := c.property[name]; ok {
 		return v, nil
 	} else {
-		fmt.Println("property", name, "not found")
+		log.Println("property", name, "not found")
 		return nil, errors.New("property not found")
 	}
 }
 
-func (c *Connection) RemoveProperty(name string) error {
+func (c *Connection) RemoveProperty(name string) {
 	c.propertyLock.Lock()
 	defer c.propertyLock.Unlock()
 
 	if _, ok := c.property[name]; ok {
 		delete(c.property, name)
-		return nil
-	} else {
-		fmt.Println("property", name, "not registry")
-		return errors.New("property not registry")
 	}
 }
 
 func (c *Connection) StartReader() {
-	fmt.Println("[reader start, belongs to connection", c.GetConnectionID(), "]")
+	//log.Println("[reader start, belongs to connection", c.GetConnectionID(), "]")
 	defer c.conn.Close()
 
 	for {
@@ -88,9 +85,9 @@ func (c *Connection) StartReader() {
 		headBuf := make([]byte, MessageHeadLength)
 		if _, err := io.ReadFull(c.conn, headBuf); err != nil {
 			if strings.Contains(err.Error(), "use of closed network connection") {
-				fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
+				//fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
 			} else {
-				fmt.Println("read MessageHead err:", err)
+				log.Println(err)
 			}
 			break
 		}
@@ -98,8 +95,7 @@ func (c *Connection) StartReader() {
 		// 将8个字节解包成message
 		msg, err := datapack.UnPack(headBuf)
 		if err != nil {
-			fmt.Println("unpack err:", err)
-			break
+			log.Println(err)
 		}
 
 		if msg.GetMsgLen() > 0 {
@@ -108,9 +104,9 @@ func (c *Connection) StartReader() {
 			dataBuf := make([]byte, msg.GetMsgLen())
 			if _, err := io.ReadFull(c.conn, dataBuf); err != nil {
 				if strings.Contains(err.Error(), "use of closed network connection") {
-					fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
+					//fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
 				} else {
-					fmt.Println("read MessageHead err:", err)
+					log.Println(err)
 				}
 				break
 			}
@@ -130,7 +126,7 @@ func (c *Connection) StartReader() {
 }
 
 func (c *Connection) StartWriter() {
-	fmt.Println("[writer start, belongs to connection", c.GetConnectionID(), "]")
+	//log.Println("[writer start, belongs to connection", c.GetConnectionID(), "]")
 
 	for {
 		select {
@@ -138,11 +134,11 @@ func (c *Connection) StartWriter() {
 		case data := <-c.msgChan:
 			_, err := c.conn.Write(data)
 			if err != nil {
-				fmt.Println("writer send message err:", err)
+				log.Println("writer send message err:", err)
 			}
 		// exitChan，reader通知writer关闭
 		case <-c.exitChan:
-			fmt.Println("[writer stopped]")
+			//log.Println("[writer stopped]")
 			return
 		}
 	}
@@ -171,7 +167,7 @@ func (c *Connection) SendMessage(id uint32, data []byte) error {
 }
 
 func (c *Connection) Start() {
-	fmt.Println("[new connection start]", c.connID, "remote addr:", c.conn.RemoteAddr())
+	//log.Println("[new connection start]", c.connID, "remote addr:", c.conn.RemoteAddr())
 
 	// 负责从客户端读数据的业务
 	go c.StartReader()
@@ -189,9 +185,9 @@ func (c *Connection) Stop() {
 
 	// 将连接管理池中的连接删除
 	if err := c.tcpServer.GetConnMgr().Remove(c); err != nil {
-		fmt.Println("connection remove from connMgr fail, err:", err)
+		log.Println("connection remove from connMgr fail, err:", err)
 	}
-	fmt.Println("[remove connection from connMgr, now active conn numbers:", c.tcpServer.GetConnMgr().Len(), "]")
+	//log.Println("[remove connection from connMgr, now active conn numbers:", c.tcpServer.GetConnMgr().Len(), "]")
 }
 
 // 只关闭连接，回收资源，不管连接管理池
@@ -200,7 +196,7 @@ func (c *Connection) StopWithNotConnMgr() {
 		return
 	}
 
-	fmt.Println("[stopping connection", c.connID, "remote addr:", c.conn.RemoteAddr(), "]")
+	//log.Println("[stopping connection", c.connID, "remote addr:", c.conn.RemoteAddr(), "]")
 
 	// 连接关闭之前的hook
 	c.tcpServer.CallBeforeConnDestroy(c)
@@ -222,7 +218,7 @@ func (c *Connection) StopWithNotConnMgr() {
 	close(c.exitChan)
 	close(c.msgChan)
 
-	fmt.Println("[connection", c.GetConnectionID(), "exit]")
+	//log.Println("[connection", c.GetConnectionID(), "exit]")
 }
 
 func NewConnection(server kiface.IServer, conn *net.TCPConn, id uint32, msgHandler kiface.IMsgHandler) kiface.IConnection {
@@ -240,7 +236,7 @@ func NewConnection(server kiface.IServer, conn *net.TCPConn, id uint32, msgHandl
 	}
 
 	c.tcpServer.GetConnMgr().Add(c)
-	fmt.Println("add connection in connMgr, active conn =", c.tcpServer.GetConnMgr().Len())
+	//log.Println("add connection in connMgr, active conn =", c.tcpServer.GetConnMgr().Len())
 
 	return c
 }

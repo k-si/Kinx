@@ -2,8 +2,8 @@ package knet
 
 import (
 	"errors"
-	"fmt"
 	"kinx/kiface"
+	"log"
 	"sync"
 )
 
@@ -30,7 +30,7 @@ func (cm *ConnectionManager) Remove(connection kiface.IConnection) error {
 	defer cm.mu.Unlock()
 
 	if _, ok := cm.connections[connection.GetConnectionID()]; !ok {
-		fmt.Println("connection", connection.GetConnectionID(), "do not exits!")
+		log.Println("connection", connection.GetConnectionID(), "do not exits!")
 		return errors.New("remove nil pointer connection")
 	}
 
@@ -44,7 +44,7 @@ func (cm *ConnectionManager) Get(id uint32) (kiface.IConnection, error) {
 	defer cm.mu.RUnlock()
 
 	if _, ok := cm.connections[id]; !ok {
-		fmt.Println("connection", id, "do not exit!")
+		log.Println("connection", id, "do not exit!")
 		return nil, errors.New("get nil pointer connection")
 	}
 	return cm.connections[id], nil

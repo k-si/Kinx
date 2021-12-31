@@ -15,5 +15,5 @@ type IConnection interface {
 	GetConnectionID() uint32
 	SetProperty(string, interface{})
 	GetProperty(string) (interface{}, error)
-	RemoveProperty(string) error
+	RemoveProperty(string)
 }

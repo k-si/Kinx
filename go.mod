@@ -1,1 +1,1 @@
-module "kinx"
+module Kinx

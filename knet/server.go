@@ -3,6 +3,8 @@ package knet
 import (
 	"fmt"
 	"github.com/k-si/Kinx/kiface"
+	"github.com/k-si/Kinx/utils"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -63,7 +65,6 @@ func (s *Server) CallBeforeConnDestroy(connection kiface.IConnection) {
 }
 
 func (s *Server) AddRouter(msgId uint32, router kiface.IRouter) kiface.IServer {
-	//fmt.Println("[router registry SUCCESS]")
 
 	// 判断不能重复注册
 	apis := s.MsgHandler.GetApis()
@@ -77,7 +78,6 @@ func (s *Server) AddRouter(msgId uint32, router kiface.IRouter) kiface.IServer {
 }
 
 func (s *Server) Start() {
-	//log.Println("[server TCP start SUCCESS]:", s.Name, s.IP, s.Port, s.IPVersion)
 
 	// 初始化worker线程池
 	s.MsgHandler.InitWorkerPool()
@@ -97,12 +97,14 @@ func (s *Server) Start() {
 		return
 	}
 
+	log.Println("[server TCP listener start SUCCESS]:", s.Name, s.IP, s.Port, s.IPVersion)
+
 	var cid uint32
 
 OverServer:
 	for {
 		// 阻塞的等待客户连接
-		//log.Println("[listener accept TCP connect...]")
+		log.Println("[waiting for connection...]")
 		conn, err := listener.AcceptTCP()
 		if err != nil {
 			select {
@@ -133,7 +135,7 @@ OverServer:
 // TODO: 优化心跳检测算法
 // 服务端心跳检测，每5s将所有连接的fresh加1
 func (s *Server) heartBeat() {
-	//log.Println("[server heart beat start SUCCESS]")
+	log.Println("[server heart beat start SUCCESS]")
 
 OverHeartBeat:
 	for {
@@ -145,7 +147,7 @@ OverHeartBeat:
 				continue
 			}
 			if conn.GetFresh() == config.HeartFreshLevel {
-				//log.Println("[connection", conn.GetConnectionID(), "fresh level arrive max, will stop conn!]")
+				log.Println("[connection", conn.GetConnectionID(), "fresh level arrive max, will stop conn!]")
 				conn.Stop()
 			} else {
 				conn.SetFresh(conn.GetFresh() + 1)
@@ -161,7 +163,7 @@ OverHeartBeat:
 }
 
 func (s *Server) Serve() error {
-	//fmt.Println("[server starting...]")
+	log.Println("[server starting...]")
 
 	// 监听系统终止进程的命令
 	signal.Notify(s.DoExitChan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -179,7 +181,7 @@ func (s *Server) Serve() error {
 
 	err := s.listener.Close()
 	if err != nil {
-		log.Println("close listener err:", err)
+		log.Println("[close listener err]:", err)
 		return err
 	}
 
@@ -189,7 +191,7 @@ func (s *Server) Serve() error {
 	// 回收资源
 	s.Recycle()
 
-	//log.Println("[See you next time, bye~]")
+	log.Println("[See you next time, bye~]")
 	return nil
 }
 
@@ -203,6 +205,17 @@ func (s *Server) Recycle() {
 // 真正触发server服务停止的操作，请谨慎使用！
 func (s *Server) Stop() {
 	s.DoExitChan <- os.Kill
+}
+
+func init() {
+	filePath := "../resource/kinx.banner"
+	if utils.IsExist(filePath) {
+		data, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			fmt.Println("read kinx.banner fail")
+		}
+		fmt.Println(string(data))
+	}
 }
 
 func NewServer(c Config) kiface.IServer {

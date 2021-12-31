@@ -1,1 +1,1 @@
-module "kinx"
+module github.com/k-si/kinx

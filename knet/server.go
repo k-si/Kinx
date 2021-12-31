@@ -2,7 +2,7 @@ package knet
 
 import (
 	"fmt"
-	"kinx/kiface"
+	"github.com/k-si/Kinx/kiface"
 	"log"
 	"net"
 	"os"

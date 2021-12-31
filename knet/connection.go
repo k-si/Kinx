@@ -3,8 +3,8 @@ package knet
 import (
 	"errors"
 	"fmt"
+	"github.com/k-si/Kinx/kiface"
 	"io"
-	"kinx/kiface"
 	"log"
 	"net"
 	"strings"

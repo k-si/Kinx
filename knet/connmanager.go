@@ -2,7 +2,7 @@ package knet
 
 import (
 	"errors"
-	"kinx/kiface"
+	"github.com/k-si/Kinx/kiface"
 	"log"
 	"sync"
 )

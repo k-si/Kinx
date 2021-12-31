@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"kinx/kiface"
+	"github.com/k-si/Kinx/kiface"
 )
 
 const (

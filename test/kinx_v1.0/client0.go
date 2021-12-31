@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/k-si/Kinx/knet"
 	"io"
-	"kinx/knet"
 	"net"
 	"time"
 )

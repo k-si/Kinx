@@ -1,6 +1,6 @@
 package knet
 
-import "kinx/kiface"
+import "github.com/k-si/Kinx/kiface"
 
 // 用来被继承
 type BaseRouter struct{}

@@ -1,7 +1,7 @@
 package knet
 
 import (
-	"kinx/kiface"
+	"github.com/k-si/Kinx/kiface"
 	"strconv"
 )
 

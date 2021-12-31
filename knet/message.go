@@ -1,6 +1,6 @@
 package knet
 
-import "kinx/kiface"
+import "github.com/k-si/Kinx/kiface"
 
 // TLV协议：MessageId | MessageLen | MessageData
 type Message struct {

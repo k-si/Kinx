@@ -1,1 +1,3 @@
-module github.com/k-si/kinx
+module github.com/k-si/Kinx
+
+go 1.16

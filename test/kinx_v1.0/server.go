@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"kinx/kiface"
-	"kinx/knet"
+	"github.com/k-si/Kinx/kiface"
+	"github.com/k-si/Kinx/knet"
 )
 
 type PingRouter struct {

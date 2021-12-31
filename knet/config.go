@@ -5,7 +5,7 @@ import "time"
 const (
 	DefaultIPVersion         = "tcp4"
 	DefaultHost              = "127.0.0.1"
-	DefaultTcpPort           = 8888
+	DefaultTcpPort           = 8088
 	DefaultMaxConnSize       = 1
 	DefaultMaxPackageSize    = 1024 * 1024 // 1mb
 	DefaultWorkerPoolSize    = 1

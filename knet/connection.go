@@ -2,12 +2,10 @@ package knet
 
 import (
 	"errors"
-	"fmt"
 	"github.com/k-si/Kinx/kiface"
 	"io"
 	"log"
 	"net"
-	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -76,7 +74,8 @@ func (c *Connection) RemoveProperty(name string) {
 
 func (c *Connection) StartReader() {
 	//log.Println("[reader start, belongs to connection", c.GetConnectionID(), "]")
-	defer c.conn.Close()
+	//defer c.conn.Close()
+	defer c.Stop()
 
 	for {
 		datapack := NewDataPack()
@@ -84,11 +83,11 @@ func (c *Connection) StartReader() {
 		// 从conn中读取8个字节
 		headBuf := make([]byte, MessageHeadLength)
 		if _, err := io.ReadFull(c.conn, headBuf); err != nil {
-			if strings.Contains(err.Error(), "use of closed network connection") {
-				//fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
-			} else {
-				log.Println(err)
-			}
+			//if strings.Contains(err.Error(), "use of closed network connection") {
+			//	//fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
+			//} else {
+			//	log.Println(err)
+			//}
 			break
 		}
 
@@ -103,11 +102,11 @@ func (c *Connection) StartReader() {
 			// 再继续读取n个字节的data
 			dataBuf := make([]byte, msg.GetMsgLen())
 			if _, err := io.ReadFull(c.conn, dataBuf); err != nil {
-				if strings.Contains(err.Error(), "use of closed network connection") {
-					//fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
-				} else {
-					log.Println(err)
-				}
+				//if strings.Contains(err.Error(), "use of closed network connection") {
+				//	//fmt.Println("[there happened an err: use of closed network connection, in most cases, it doesn't matter]")
+				//} else {
+				//	log.Println(err)
+				//}
 				break
 			}
 			msg.SetMsgData(dataBuf)
@@ -203,7 +202,7 @@ func (c *Connection) StopWithNotConnMgr() {
 
 	// 通知writer停止
 	c.exitChan <- struct{}{}
-	fmt.Println("[reader is closed, writer will close]")
+	//log.Println("[reader is closed, writer will close]")
 
 	// 必须放在conn.close()的前面，conn的关闭除了自身退出read业务，
 	// 还有可能是外界关闭，外界关闭conn后，reader业务没有停止，再次

@@ -8,8 +8,10 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -164,7 +166,7 @@ func (s *Server) Serve() error {
 	log.Println("[server starting...]")
 
 	// 监听系统终止进程的命令
-	//signal.Notify(s.DoExitChan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	signal.Notify(s.DoExitChan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	// 处理业务
 	go s.Start()
@@ -189,7 +191,7 @@ func (s *Server) Serve() error {
 	// 回收资源
 	s.Recycle()
 
-	log.Println("[See you next time, bye~]")
+	//log.Println("[See you next time, bye~]")
 	return nil
 }
 

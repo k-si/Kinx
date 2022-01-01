@@ -140,7 +140,7 @@ func (s *Server) heartBeat() {
 
 OverHeartBeat:
 	for {
-		time.Sleep(config.HeartRateInSecond * time.Second)
+		time.Sleep(config.HeartRateInSecond)
 		for id, _ := range s.ConnMgr.GetConns() {
 			conn, err := s.ConnMgr.Get(id)
 			if err != nil {
@@ -148,7 +148,7 @@ OverHeartBeat:
 				continue
 			}
 			if conn.GetFresh() == config.HeartFreshLevel {
-				log.Println("[connection", conn.GetConnectionID(), "fresh level arrive max, will stop conn!]")
+				log.Println("[connection", conn.GetConnectionID(), "expired]")
 				conn.Stop()
 			} else {
 				conn.SetFresh(conn.GetFresh() + 1)

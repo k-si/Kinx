@@ -10,7 +10,7 @@ const (
 	DefaultMaxPackageSize    = 1024 * 1024 // 1mb
 	DefaultWorkerPoolSize    = 1
 	DefaultMaxWorkerTaskSize = 100
-	DefaultHeartRateInSecond = 30
+	DefaultHeartRateInSecond = 30 * time.Second
 	DefaultHeartFreshLevel   = 5
 )
 

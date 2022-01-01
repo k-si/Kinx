@@ -199,7 +199,7 @@ func (c *Connection) StopWithNotConnMgr() {
 		return
 	}
 
-	//log.Println("[stopping connection", c.connID, "remote addr:", c.conn.RemoteAddr(), "]")
+	log.Println("[stop connection]:", c.connID)
 
 	// 连接关闭之前的hook
 	c.tcpServer.CallBeforeConnDestroy(c)

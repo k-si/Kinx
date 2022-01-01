@@ -180,6 +180,10 @@ func (c *Connection) Start() {
 
 // 关闭连接，回收资源，删除管理池中记录的这个conn
 func (c *Connection) Stop() {
+	if atomic.LoadUint32(&c.isClosed) == closed {
+		return
+	}
+
 	c.StopWithNotConnMgr()
 
 	// 将连接管理池中的连接删除

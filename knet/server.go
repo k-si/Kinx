@@ -104,7 +104,7 @@ func (s *Server) Start() {
 OverServer:
 	for {
 		// 阻塞的等待客户连接
-		log.Println("[waiting for connection...]")
+		//log.Println("[waiting for connection...]")
 		conn, err := listener.AcceptTCP()
 		if err != nil {
 			select {

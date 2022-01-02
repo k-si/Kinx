@@ -97,7 +97,10 @@ func (c *Connection) StartReader() {
 			log.Println(err)
 		}
 
-		if msg.GetMsgLen() > 0 {
+		// 表明是心跳包
+		if msg.GetMsgId() == config.HeartBeatPackageId {
+			c.SetFresh(0)
+		} else {
 
 			// 再继续读取n个字节的data
 			dataBuf := make([]byte, msg.GetMsgLen())
@@ -116,10 +119,6 @@ func (c *Connection) StartReader() {
 
 			// 消息管理器将task均衡分配到worker上
 			c.msgHandler.AllotTask(req)
-		} else {
-
-			// 如果是只有header，表明是心跳包
-			c.SetFresh(0)
 		}
 	}
 }

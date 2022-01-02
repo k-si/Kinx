@@ -127,8 +127,8 @@ OverServer:
 
 		// 处理客户端连接的业务
 		dealconn := NewConnection(s, conn, cid, s.MsgHandler)
-		cid++
 		log.Println("[receive connection]:", cid)
+		cid++
 		go dealconn.Start()
 	}
 }

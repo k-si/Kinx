@@ -1,50 +1,68 @@
 # Kinx
-tcp服务框架，参考Zinx。
+Kinx是轻量的单点serverTCP服务框架，使用多线程处理业务，读写分离，可通过配置worker线程数量或连接数量限制并发量和cpu负载。同时连接管理模块和心跳检测能很好的控制冗余资源的占用。
+
 
 # 使用
+
+### 服户端启动：
+
 ![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/kinx%E4%BD%BF%E7%94%A8.png)
+
+### 代码中使用：
+
+test包下有详细的使用示例，这里只做简单描述：
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/k-si/Kinx/kiface"
+	"github.com/k-si/Kinx/knet"
+)
+
+type PingRouter struct {
+	knet.BaseRouter
+}
+
+// 处理读业务，需要继承BaseRouter并实现Handle方法，在该方法编写具体业务逻辑。
+func (p *PingRouter) Handle(req kiface.IRequest) {
+	fmt.Println(">>>>>>> handler ping router")
+
+	if err := req.GetConnection().SendMessage(0, []byte("ping client...")); err != nil {
+		fmt.Println("server send message to client err:", err)
+	}
+}
+
+// 其他钩子函数
+func (p *PingRouter) PreHandle(req kiface.IRequest) {
+	fmt.Println("pre")
+}
+
+func (p *PingRouter) PostHandle(req kiface.IRequest) {
+	fmt.Println("post")
+}
+
+func main() {
+	c := knet.DefaultConfig()
+	s := knet.NewServer(c)
+
+	// 业务函数注册
+	pr := &PingRouter{}
+	s.AddRouter(0, pr)
+	
+	// 启动服务
+	s.Serve()
+	defer s.Stop()
+}
+```
 
 # 当前架构
 图中的requstHandler同代码中的msgHandler
 ![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/Kinx0.10.png)
 
-# 架构演进
-## v0.1
-实现server模块，可以正常启动一个server与client回显对话。
+# 版本变更
 
-## v0.2
-增加connection模块，将连接句柄要处理的业务抽离，server只负责生产conn，connection模块处理句柄读写业务。
-
-## v0.3
-增加router模块，通过继承一个baserouter，来自定义conn的业务函数。router传入server，server再传入connection。
-
-## v0.4
-增加config模块，用户通过json配置框架中的参数，host、ip等等。
-
-## v0.5
-将传输的数据整合为message结构体，通过自定义TLV协议(messageType|messageDataLength|messageData)解决tcp黏包问题。
-
-## v0.6
-增加消息管理模块MsgHandler，允许用户注册多个router，每个message通过id和用户自定义的业务router一一绑定。
-
-## v0.7
-
-完成读写分离，一个connection启用两个goroutine分别处理读写业务，读取goroutine通过channel传输数据。
-
-## v0.8
-完善消息管理模块，增加worker线程池和消息队列，每个worker带有一个队列，所有的连接业务处理均衡分配到worker上。
-
-## v0.9
-增加连接管理模块，将所有连接放入map中，方便查看、操作当前活跃的连接。增加两个hook函数，连接建立之后、连接销毁之前。
-
-## v0.10
-增加连接属性配置，方便用户给连接配置一些property。
-
-## v0.11
-通过channel实现优雅关闭 tcp server。
-
-## v1.0
-实现服务端和客户端heart beat检测，完善一些字节和控制台输出信息。
+[点此查看](https://github.com/k-si/Kinx/blob/master/version_change.md)
 
 
 

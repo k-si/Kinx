@@ -1,14 +1,10 @@
 # Kinx
-Kinx是轻量的单点serverTCP服务框架，使用多线程处理业务，读写分离，可通过配置worker线程数量或连接数量限制并发量和cpu负载。同时连接管理模块和心跳检测能很好的控制冗余资源的占用。
 
+Kinx是TCP服务框架，是使用【IO多路复用+多线程】实现的单点server。Kinx可处理并发连接，可通过配置【线程池大小】或【连接数量】减少cpu负载，同时【连接管理模块】和【心跳检测】能有效节省服务器资源。
 
 # 使用
 
-### 服户端启动：
-
-![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/kinx%E4%BD%BF%E7%94%A8.png)
-
-### 代码中使用：
+### 框架使用：
 
 test包下有详细的使用示例，这里只做简单描述：
 ```go
@@ -56,9 +52,8 @@ func main() {
 }
 ```
 
-# 当前架构
-图中的requstHandler同代码中的msgHandler
-![Image text](https://ksir-oss.oss-cn-beijing.aliyuncs.com/github/kinx/Kinx0.10.png)
+### 服户启动：
+![avatar](img/kinx使用.png)
 
 # 版本变更
 

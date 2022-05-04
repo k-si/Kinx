@@ -95,6 +95,7 @@ func (c *Connection) StartReader() {
 		msg, err := datapack.UnPack(headBuf)
 		if err != nil {
 			log.Println(err)
+			continue
 		}
 
 		// 表明是心跳包
@@ -198,7 +199,7 @@ func (c *Connection) StopWithNotConnMgr() {
 		return
 	}
 
-	log.Println("[stop connection]:", c.connID)
+	log.Println("[stop connection]:", c.connID, "-", c.conn.RemoteAddr())
 
 	// 连接关闭之前的hook
 	c.tcpServer.CallBeforeConnDestroy(c)
